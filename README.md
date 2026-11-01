@@ -32,6 +32,14 @@ The seed script creates `alice` and `bob`, each with 15 notes, with development 
 
 ## Authentication and browser integration
 
+### Implemented endpoints
+
+| Method | Endpoint | Description | Success |
+| --- | --- | --- | --- |
+| POST | `/signup` | Register a unique username, hash the password, and start a session. | 201 |
+
+`POST /signup` accepts `{"username":"alice","password":"password123"}` and returns `id`, `username`, and `csrf_token`. Usernames must contain 3–32 ASCII letters, digits, or underscores; they are case-sensitive. Passwords must contain 8–72 UTF-8 bytes. Duplicate usernames return 409, invalid fields return 422, malformed/empty JSON returns 400, unsupported content types return 415, and disallowed origins return 403. Unknown fields are rejected.
+
 Use the provided **session** frontend. Send `credentials: "include"` with fetch requests. Set `FRONTEND_ORIGIN` to its exact origin (for example `http://localhost:5173`) to enable credentialed CORS. Use the same hostname for both apps (`localhost` for both, rather than mixing `localhost` and `127.0.0.1`). Default `SameSite=Lax` cookies support local development and same-site hosting; unrelated domains require a separate deployment/cookie configuration review.
 
 All POST, PATCH, and DELETE requests require `Content-Type: application/json`; authenticated writes also require `X-CSRF-Token` using the token returned by authentication/session responses. DELETE may have an empty body but still needs the JSON content type. CSRF tokens rotate on signup/login. Login/signup also enforce allowed browser origins and JSON content types. Cookie session data is signed, not encrypted, and contains only a user ID and CSRF token. A session lasts at most 12 hours.

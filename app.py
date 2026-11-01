@@ -31,6 +31,8 @@ def create_app(test_config=None):
     bcrypt.init_app(app)
     migrate.init_app(app, db)
     app.before_request(protect_browser_requests)
+    from routes.auth import auth
+    app.register_blueprint(auth)
 
     @app.errorhandler(ValidationError)
     def validation_error(error):
