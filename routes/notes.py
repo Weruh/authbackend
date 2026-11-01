@@ -1,6 +1,6 @@
 """Private note endpoints; every query is scoped to the signed-in user."""
 from flask import Blueprint, g, jsonify, request
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
 
 from extensions import db
 from models import Note
@@ -47,3 +47,19 @@ def create_note():
     response.status_code = 201
     response.headers["Location"] = f"/notes/{note.id}"
     return response
+
+
+def owned_note(note_id):
+    note = db.session.execute(
+        db.select(Note).filter_by(id=note_id, user_id=g.user.id)
+    ).scalar_one_or_none()
+    if note is None:
+        # Match missing IDs so another user's records cannot be enumerated.
+        raise NotFound("Note not found.")
+    return note
+
+
+@notes.get("/notes/<int:note_id>")
+@login_required
+def show_note(note_id):
+    return jsonify(owned_note(note_id).to_dict())
