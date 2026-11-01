@@ -1,13 +1,14 @@
 """Registration and session authentication endpoints."""
 from secrets import token_urlsafe
 
-from flask import Blueprint, jsonify, session
+from flask import Blueprint, g, jsonify, session
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Conflict, Unauthorized
 
 from extensions import db
 from models import User
+from security import login_required
 from validation import CredentialsSchema, load_json
 
 auth = Blueprint("auth", __name__)
@@ -47,3 +48,9 @@ def login():
     if user is None or not user.authenticate(data["password"]):
         raise Unauthorized("Invalid username or password.")
     return jsonify(start_session(user)), 200
+
+
+@auth.get("/check_session")
+@login_required
+def check_session():
+    return jsonify({**g.user.to_dict(), "csrf_token": session["csrf_token"]}), 200
