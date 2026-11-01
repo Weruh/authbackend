@@ -32,7 +32,9 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
     app.before_request(protect_browser_requests)
     from routes.auth import auth
+    from routes.notes import notes
     app.register_blueprint(auth)
+    app.register_blueprint(notes)
 
     @app.errorhandler(ValidationError)
     def validation_error(error):
