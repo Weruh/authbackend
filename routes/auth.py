@@ -4,7 +4,7 @@ from secrets import token_urlsafe
 from flask import Blueprint, jsonify, session
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import Conflict
+from werkzeug.exceptions import Conflict, Unauthorized
 
 from extensions import db
 from models import User
@@ -36,3 +36,14 @@ def signup():
         db.session.rollback()
         raise Conflict("Username is already registered.")
     return jsonify(start_session(user)), 201
+
+
+@auth.post("/login")
+def login():
+    data = load_json(CredentialsSchema())
+    user = db.session.execute(
+        db.select(User).filter_by(username=data["username"])
+    ).scalar_one_or_none()
+    if user is None or not user.authenticate(data["password"]):
+        raise Unauthorized("Invalid username or password.")
+    return jsonify(start_session(user)), 200
