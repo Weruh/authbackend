@@ -5,6 +5,7 @@ from werkzeug.exceptions import BadRequest
 from extensions import db
 from models import Note
 from security import login_required
+from validation import NoteSchema, load_json
 
 notes = Blueprint("notes", __name__)
 
@@ -33,3 +34,16 @@ def index():
         page=result.page, per_page=result.per_page, total=result.total,
         pages=result.pages, has_next=result.has_next, has_prev=result.has_prev,
     )
+
+
+@notes.post("/notes")
+@login_required
+def create_note():
+    data = load_json(NoteSchema())
+    note = Note(**data, user_id=g.user.id)
+    db.session.add(note)
+    db.session.commit()
+    response = jsonify(note.to_dict())
+    response.status_code = 201
+    response.headers["Location"] = f"/notes/{note.id}"
+    return response

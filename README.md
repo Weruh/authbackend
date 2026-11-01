@@ -41,6 +41,7 @@ The seed script creates `alice` and `bob`, each with 15 notes, with development 
 | GET | `/check_session` | Return the signed-in user and CSRF token; return 401 when signed out. | 200 |
 | DELETE | `/logout` | Clear the authenticated session. Requires CSRF header. | 204 |
 | GET | `/notes` | List only your notes, newest ID first. Query: `page=1&per_page=10`. | 200 |
+| POST | `/notes` | Create a note with `title` and `content`; ownership comes from the session. | 201 |
 
 Note lists return `notes`, `page`, `per_page`, `total`, `pages`, `has_next`, and `has_prev`. Page must be positive; per-page size must be 1–100. Invalid pagination returns 400; empty and out-of-range pages return an empty `notes` array. All notes endpoints require authentication (401 when signed out).
 
