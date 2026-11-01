@@ -74,3 +74,12 @@ def update_note(note_id):
         setattr(note, field, value)
     db.session.commit()
     return jsonify(note.to_dict())
+
+
+@notes.delete("/notes/<int:note_id>")
+@login_required
+def delete_note(note_id):
+    note = owned_note(note_id)
+    db.session.delete(note)
+    db.session.commit()
+    return "", 204

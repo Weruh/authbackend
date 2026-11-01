@@ -44,6 +44,7 @@ The seed script creates `alice` and `bob`, each with 15 notes, with development 
 | POST | `/notes` | Create a note with `title` and `content`; ownership comes from the session. | 201 |
 | GET | `/notes/<id>` | Read one owned note. Missing and other users' notes both return 404. | 200 |
 | PATCH | `/notes/<id>` | Update `title`, `content`, or both on an owned note. Requires CSRF. | 200 |
+| DELETE | `/notes/<id>` | Delete one owned note. Requires CSRF. | 204 |
 
 Note lists return `notes`, `page`, `per_page`, `total`, `pages`, `has_next`, and `has_prev`. Page must be positive; per-page size must be 1–100. Invalid pagination returns 400; empty and out-of-range pages return an empty `notes` array. All notes endpoints require authentication (401 when signed out).
 
