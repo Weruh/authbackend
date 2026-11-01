@@ -39,6 +39,7 @@ The seed script creates `alice` and `bob`, each with 15 notes, with development 
 | POST | `/signup` | Register a unique username, hash the password, and start a session. | 201 |
 | POST | `/login` | Authenticate with username/password and start a new session. | 200 |
 | GET | `/check_session` | Return the signed-in user and CSRF token; return 401 when signed out. | 200 |
+| DELETE | `/logout` | Clear the authenticated session. Requires CSRF header. | 204 |
 
 `POST /signup` accepts `{"username":"alice","password":"password123"}` and returns `id`, `username`, and `csrf_token`. Usernames must contain 3–32 ASCII letters, digits, or underscores; they are case-sensitive. Passwords must contain 8–72 UTF-8 bytes. Duplicate usernames return 409, invalid fields return 422, malformed/empty JSON returns 400, unsupported content types return 415, and disallowed origins return 403. Unknown fields are rejected.
 

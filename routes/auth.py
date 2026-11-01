@@ -54,3 +54,10 @@ def login():
 @login_required
 def check_session():
     return jsonify({**g.user.to_dict(), "csrf_token": session["csrf_token"]}), 200
+
+
+@auth.delete("/logout")
+@login_required
+def logout():
+    session.clear()
+    return "", 204
