@@ -12,7 +12,13 @@ def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         user_id = session.get("user_id")
-        g.user = db.session.get(User, user_id) if user_id else None
+        csrf_token = session.get("csrf_token")
+        valid_session = (
+            type(user_id) is int and user_id > 0
+            and isinstance(csrf_token, str) and bool(csrf_token)
+            and csrf_token.isascii()
+        )
+        g.user = db.session.get(User, user_id) if valid_session else None
         if g.user is None:
             session.clear()
             abort(401, description="Authentication required.")
@@ -37,5 +43,8 @@ def protect_browser_requests():
     if session.get("user_id"):
         expected = session.get("csrf_token", "")
         supplied = request.headers.get("X-CSRF-Token", "")
-        if not expected or not compare_digest(expected.encode(), supplied.encode()):
+        if (
+            not isinstance(expected, str) or not expected or not expected.isascii()
+            or not supplied.isascii() or not compare_digest(expected, supplied)
+        ):
             abort(403, description="A valid X-CSRF-Token header is required.")

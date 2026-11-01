@@ -48,7 +48,7 @@ The seed script creates `alice` and `bob`, each with 15 notes, with development 
 
 Note lists return `notes`, `page`, `per_page`, `total`, `pages`, `has_next`, and `has_prev`. Page must be positive; per-page size must be 1–100. Invalid pagination returns 400; empty and out-of-range pages return an empty `notes` array. All notes endpoints require authentication (401 when signed out).
 
-`POST /signup` accepts `{"username":"alice","password":"password123"}` and returns `id`, `username`, and `csrf_token`. Usernames must contain 3–32 ASCII letters, digits, or underscores; they are case-sensitive. Passwords must contain 8–72 UTF-8 bytes. Duplicate usernames return 409, invalid fields return 422, malformed/empty JSON returns 400, unsupported content types return 415, and disallowed origins return 403. Unknown fields are rejected.
+`POST /signup` accepts `{"username":"alice","password":"password123"}` and returns `id`, `username`, and `csrf_token`. Usernames must contain 3–32 ASCII letters, digits, or underscores; they are case-sensitive. Passwords must contain 8–72 UTF-8 bytes. Both signup and login enforce this byte limit. All text fields reject malformed Unicode (including unpaired surrogate escapes) with field errors. Duplicate usernames return 409, invalid fields return 422, malformed/empty JSON returns 400, unsupported content types return 415, and disallowed origins return 403. Unknown fields are rejected.
 
 `POST /login` accepts the same fields and returns the same response shape. Incorrect credentials return 401 with `{"error":"Invalid username or password."}`. Successful signup/login responses include a session cookie; preserve it when making subsequent requests.
 
@@ -91,7 +91,7 @@ curl -X DELETE -b /tmp/notes-cookies.txt -c /tmp/notes-cookies.txt \
 
 ### Frontend connection
 
-Use the provided **session** frontend. Send `credentials: "include"` with fetch requests. Set `FRONTEND_ORIGIN` to its exact origin (for example `http://localhost:5173`) to enable credentialed CORS. Use the same hostname for both apps (`localhost` for both, rather than mixing `localhost` and `127.0.0.1`). Default `SameSite=Lax` cookies support local development and same-site hosting; unrelated domains require a separate deployment/cookie configuration review.
+Connect a session-based frontend (maintained separately; none is included in this repository). Send `credentials: "include"` with fetch requests. Set `FRONTEND_ORIGIN` to its exact origin (for example `http://localhost:5173`) to enable credentialed CORS. CORS exposes the `Location` response header so the frontend can read newly created note URLs. Use the same hostname for both apps (`localhost` for both, rather than mixing `localhost` and `127.0.0.1`). Default `SameSite=Lax` cookies support local development and same-site hosting; unrelated domains require a separate deployment/cookie configuration review.
 
 All POST, PATCH, and DELETE requests require `Content-Type: application/json`; authenticated writes also require `X-CSRF-Token` using the token returned by authentication/session responses. DELETE may have an empty body but still needs the JSON content type. CSRF tokens rotate on signup/login. Login/signup also enforce allowed browser origins and JSON content types. Cookie session data is signed, not encrypted, and contains a user ID, CSRF token, and Flask session metadata. Sessions expire after 12 hours of inactivity.
 

@@ -42,7 +42,10 @@ def create_app(test_config=None):
 
     @app.errorhandler(HTTPException)
     def http_error(error):
-        return jsonify(error=error.description), error.code
+        response = error.get_response()
+        response.data = app.json.dumps({"error": error.description})
+        response.content_type = "application/json"
+        return response
 
     @app.errorhandler(500)
     def internal_error(error):
@@ -53,13 +56,15 @@ def create_app(test_config=None):
     def response_headers(response):
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
+        if app.config["FRONTEND_ORIGIN"]:
+            response.vary.add("Origin")
         origin = request.headers.get("Origin")
         if origin and origin == app.config["FRONTEND_ORIGIN"]:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRF-Token"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PATCH, DELETE, OPTIONS"
-            response.vary.add("Origin")
+            response.headers["Access-Control-Expose-Headers"] = "Location"
         return response
 
     return app
