@@ -63,3 +63,14 @@ def owned_note(note_id):
 @login_required
 def show_note(note_id):
     return jsonify(owned_note(note_id).to_dict())
+
+
+@notes.patch("/notes/<int:note_id>")
+@login_required
+def update_note(note_id):
+    note = owned_note(note_id)
+    data = load_json(NoteSchema(), partial=True)
+    for field, value in data.items():
+        setattr(note, field, value)
+    db.session.commit()
+    return jsonify(note.to_dict())
